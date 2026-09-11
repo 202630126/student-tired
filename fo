@@ -1,0 +1,583 @@
+import os
+
+html_content = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC 온라인(피파온라인) 스쿼드 & 선수 추천 AI 매니저</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --card-border: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-green: #2ea043;
+            --accent-gold: #d29922;
+            --accent-blue: #58a6ff;
+            --accent-red: #f85149;
+            --button-hover: #3fb950;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        header h1 span {
+            color: var(--accent-gold);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .filter-group select {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .recommend-btn {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 42px;
+        }
+
+        .recommend-btn:hover {
+            background-color: var(--button-hover);
+        }
+
+        .recommend-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Results Stats Bar */
+        .results-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        /* Player Grid */
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* Player Card */
+        .player-card {
+            background-color: #1c2128;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .player-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-blue);
+        }
+
+        .player-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--accent-gold);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .player-identity h3 {
+            font-size: 1.3rem;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .player-identity .season {
+            display: inline-block;
+            background-color: var(--accent-gold);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+
+        .player-identity .position {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+        }
+
+        .ovr-badge {
+            background: linear-gradient(135deg, #1f6feb, #1158c7);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 800;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Price & Performance Rating */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .price-tag {
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+        }
+
+        .tier-badge {
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: #238636;
+            color: white;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        /* Description / Pros */
+        .player-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            border-top: 1px solid var(--card-border);
+            padding-top: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 600px) {
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>FC 온라인 <span>선수 추천 AI</span></h1>
+        <p>포지션, 예산, 선호하는 성능에 맞는 최적의 선수를 탐색해보세요!</p>
+    </header>
+
+    <!-- 필터 영역 -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <label for="position-select">포지션 선택</label>
+            <select id="position-select">
+                <option value="ALL">전체 포지션</option>
+                <option value="ST">ST / FW (스트라이커)</option>
+                <option value="CAM">CAM / MF (공격형 미드필더)</option>
+                <option value="CM">CM / CDM (중원/수비형 미드)</option>
+                <option value="CB">CB / DF (센터백)</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="budget-select">예산 범주 (BP)</label>
+            <select id="budget-select">
+                <option value="ALL">전체 가격대</option>
+                <option value="LOW">가성비 (100억 BP 이하)</option>
+                <option value="MID">중급형 (100억 ~ 500억 BP)</option>
+                <option value="HIGH">하이엔드 (500억 BP 이상)</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sort-select">정렬 기준</label>
+            <select id="sort-select">
+                <option value="RECOMMEND">추천도순</option>
+                <option value="PRICE_ASC">가격 낮은순</option>
+                <option value="PRICE_DESC">가격 높은순</option>
+                <option value="OVR_DESC">능력치(OVR) 높은순</option>
+            </select>
+        </div>
+
+        <button class="recommend-btn" onclick="filterAndRenderPlayers()">
+            🔍 선수 추천받기
+        </button>
+    </div>
+
+    <!-- 결과 요약 바 -->
+    <div class="results-summary">
+        <span id="result-count">총 0명의 선수가 검색되었습니다.</span>
+        <span>기준: 2026 FC 온라인 최신 데이터</span>
+    </div>
+
+    <!-- 선수 카드 데이터 목록 -->
+    <div class="player-grid" id="player-container">
+        <!-- JS로 dynamic 생성됨 -->
+    </div>
+</div>
+
+<script>
+    // 선수 데이터베이스
+    const playersData = [
+        {
+            name: "호날두",
+            season: "23UCL",
+            position: "ST",
+            ovr: 109,
+            priceBP: 120, // 억 BP 단위
+            priceText: "120억 BP",
+            tier: "S티어",
+            budgetCategory: "MID",
+            stats: { speed: 112, shoot: 114, pass: 98, dribble: 108, phys: 105 },
+            desc: "압도적인 침투와 점프 헤더, 양발 기반의 골 결정력을 갖춘 명실상부 1티어 스트라이커입니다."
+        },
+        {
+            name: "손흥민",
+            season: "24TS",
+            position: "ST",
+            ovr: 112,
+            priceBP: 650,
+            priceText: "650억 BP",
+            tier: "S+티어",
+            budgetCategory: "HIGH",
+            stats: { speed: 118, shoot: 116, pass: 104, dribble: 112, phys: 98 },
+            desc: "양발 감아차기(Z+D) 최고 존엄. 빠른 속가와 예리한 감아차기로 경기 흐름을 바꾸는 득점원입니다."
+        },
+        {
+            name: "셰브첸코",
+            season: "ICON",
+            position: "ST",
+            ovr: 110,
+            priceBP: 85,
+            priceText: "85억 BP",
+            tier: "A+티어",
+            budgetCategory: "LOW",
+            stats: { speed: 110, shoot: 112, pass: 92, dribble: 105, phys: 102 },
+            desc: "100억 BP 이하 가성비 대장. 위협적인 침투 움직임과 날카로운 슛팅 감각을 자랑합니다."
+        },
+        {
+            name: "굴리트",
+            season: "EBS",
+            position: "CAM",
+            ovr: 108,
+            priceBP: 95,
+            priceText: "95억 BP",
+            tier: "S티어",
+            budgetCategory: "LOW",
+            stats: { speed: 106, shoot: 108, pass: 106, dribble: 105, phys: 112 },
+            desc: "FC 온라인의 육각형 신. 육중한 체지컬, 공중볼 점유, 양발 슛팅까지 부족함이 없는 필수 선수입니다."
+        },
+        {
+            name: "케빈 더브라이너",
+            season: "23TS",
+            position: "CAM",
+            ovr: 111,
+            priceBP: 380,
+            priceText: "380억 BP",
+            tier: "S+티어",
+            budgetCategory: "MID",
+            stats: { speed: 102, shoot: 110, pass: 118, dribble: 108, phys: 100 },
+            desc: "패스 마스터. 자원 배분과 킬패스, 중거리 슛 능력이 극대화된 최고급 공격형 미드필더입니다."
+        },
+        {
+            name: "유상철",
+            season: "2022KB",
+            position: "CM",
+            ovr: 107,
+            priceBP: 60,
+            priceText: "60억 BP",
+            tier: "A+티어",
+            budgetCategory: "LOW",
+            stats: { speed: 102, shoot: 104, pass: 105, dribble: 102, phys: 108 },
+            desc: "대한민국 스쿼드의 핵심. 완벽한 양발과 공수 양면에서의 왕성한 활동량을 보장합니다."
+        },
+        {
+            name: "야야 투레",
+            season: "SPL",
+            position: "CM",
+            ovr: 109,
+            priceBP: 240,
+            priceText: "240억 BP",
+            tier: "S티어",
+            budgetCategory: "MID",
+            stats: { speed: 104, shoot: 105, pass: 107, dribble: 104, phys: 116 },
+            desc: "중원을 지배하는 피지컬 몬스터. 강력한 몸싸움과 중거리 포가 일품인 볼란치입니다."
+        },
+        {
+            name: "반데이크",
+            season: "24TY",
+            position: "CB",
+            ovr: 113,
+            priceBP: 820,
+            priceText: "820억 BP",
+            tier: "S+티어",
+            budgetCategory: "HIGH",
+            stats: { speed: 108, shoot: 65, pass: 92, dribble: 88, phys: 120 },
+            desc: "수비진의 통곡의 벽. 압도적인 역적응력과 정교한 학다리 태클로 상대 공격수를 완벽 차단합니다."
+        },
+        {
+            name: "뤼디거",
+            season: "23UCL",
+            position: "CB",
+            ovr: 108,
+            priceBP: 150,
+            priceText: "150억 BP",
+            tier: "S티어",
+            budgetCategory: "MID",
+            stats: { speed: 112, shoot: 60, pass: 88, dribble: 85, phys: 114 },
+            desc: "빠른 속가를 갖춘 수비수. 뒷공간 커버 능력이 뛰어나며 대장팀 및 첼시/레알 필수 수비수입니다."
+        },
+        {
+            name: "말디니",
+            season: "CAP",
+            position: "CB",
+            ovr: 106,
+            priceBP: 45,
+            priceText: "45억 BP",
+            tier: "A티어",
+            budgetCategory: "LOW",
+            stats: { speed: 108, shoot: 58, pass: 86, dribble: 89, phys: 104 },
+            desc: "저렴한 가격으로 대단한 AI 수비력을 맛볼 수 있는 명품 센터백입니다."
+        }
+    ];
+
+    // 선수 필터링 및 정렬 함수
+    function filterAndRenderPlayers() {
+        const selectedPosition = document.getElementById('position-select').value;
+        const selectedBudget = document.getElementById('budget-select').value;
+        const selectedSort = document.getElementById('sort-select').value;
+
+        // 1. 필터링
+        let filtered = playersData.filter(player => {
+            const matchPos = (selectedPosition === 'ALL') || (player.position === selectedPosition);
+            const matchBudget = (selectedBudget === 'ALL') || (player.budgetCategory === selectedBudget);
+            return matchPos && matchBudget;
+        });
+
+        // 2. 정렬
+        filtered.sort((a, b) => {
+            if (selectedSort === 'PRICE_ASC') return a.priceBP - b.priceBP;
+            if (selectedSort === 'PRICE_DESC') return b.priceBP - a.priceBP;
+            if (selectedSort === 'OVR_DESC') return b.ovr - a.ovr;
+            return 0; // RECOMMEND 기본 순서
+        });
+
+        // 3. 화면 렌더링
+        renderGrid(filtered);
+    }
+
+    // 카드를 DOM에 그리는 함수
+    function renderGrid(list) {
+        const container = document.getElementById('player-container');
+        const countText = document.getElementById('result-count');
+
+        countText.innerText = `총 ${list.length}명의 선수가 검색되었습니다.`;
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>조건에 맞는 선수가 없습니다.</h3>
+                    <p>포지션이나 예산 조건 범위를 넓혀서 다시 검색해 보세요.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.forEach(player => {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="player-identity">
+                        <h3>${player.name}</h3>
+                        <span class="season">${player.season}</span>
+                        <span class="position">${player.position}</span>
+                    </div>
+                    <div class="ovr-badge">${player.ovr}</div>
+                </div>
+
+                <div class="info-row">
+                    <span class="price-tag">💰 ${player.priceText}</span>
+                    <span class="tier-badge">${player.tier}</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">속가</span>
+                        <span class="stat-value">${player.stats.speed}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">슛팅</span>
+                        <span class="stat-value">${player.stats.shoot}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">피지컬</span>
+                        <span class="stat-value">${player.stats.phys}</span>
+                    </div>
+                </div>
+
+                <div class="player-desc">
+                    ${player.desc}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // 초기 페이지 로드 시 전체 선수 렌더링
+    window.onload = function() {
+        filterAndRenderPlayers();
+    };
+</script>
+</body>
+</html>
+"""
+
+with open("fifa_online_recommendation.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("HTML generated successfully.")
