@@ -1,35 +1,33 @@
-import os
-
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FC 온라인(피파온라인) 스쿼드 & 선수 추천 AI 매니저</title>
+    <title>AI 학생 피로도 진단 & 맞춤 솔루션 매니저</title>
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --card-border: #30363d;
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-            --accent-green: #2ea043;
-            --accent-gold: #d29922;
-            --accent-blue: #58a6ff;
-            --accent-red: #f85149;
-            --button-hover: #3fb950;
+            --primary-color: #4A90E2;
+            --secondary-color: #50E3C2;
+            --bg-color: #F4F7F6;
+            --card-bg: #FFFFFF;
+            --text-color: #333333;
+            --text-muted: #666666;
+            --border-color: #E0E0E0;
+            --danger-color: #FF5A5F;
+            --warning-color: #FFAA00;
+            --success-color: #2ECC71;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-primary);
+            color: var(--text-color);
             padding: 20px;
             display: flex;
             justify-content: center;
@@ -39,265 +37,147 @@ html_content = """<!DOCTYPE html>
 
         .container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 800px;
             background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
             border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 20px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 15px;
         }
 
         header h1 {
-            font-size: 2.2rem;
-            color: #ffffff;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        header h1 span {
-            color: var(--accent-gold);
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
         }
 
         header p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        /* Filter Section */
-        .filter-section {
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: flex-end;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .filter-group label {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .filter-group select {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 10px 14px;
+            color: var(--text-muted);
             font-size: 0.95rem;
-            outline: none;
-            cursor: pointer;
-            transition: border-color 0.2s;
         }
 
-        .filter-group select:focus {
-            border-color: var(--accent-blue);
-        }
-
-        .recommend-btn {
-            background-color: var(--accent-green);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            height: 42px;
-        }
-
-        .recommend-btn:hover {
-            background-color: var(--button-hover);
-        }
-
-        .recommend-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Results Stats Bar */
-        .results-summary {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .form-group {
             margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
             font-size: 0.95rem;
-            color: var(--text-secondary);
         }
 
-        /* Player Grid */
-        .player-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        /* Player Card */
-        .player-card {
-            background-color: #1c2128;
-            border: 1px solid var(--card-border);
+        input[type="range"] {
+            flex: 1;
+        }
+
+        .range-value {
+            font-weight: bold;
+            min-width: 55px;
+            text-align: right;
+            color: var(--primary-color);
+        }
+
+        /* Results Display */
+        .result-card {
+            background: #F8FAFC;
             border-radius: 12px;
             padding: 20px;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s, border-color 0.2s;
+            margin-top: 25px;
+            border: 1px solid var(--border-color);
         }
 
-        .player-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent-blue);
-        }
-
-        .player-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background-color: var(--accent-gold);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+        .score-bar-container {
             margin-bottom: 15px;
         }
 
-        .player-identity h3 {
-            font-size: 1.3rem;
-            color: white;
-            margin-bottom: 4px;
-        }
-
-        .player-identity .season {
-            display: inline-block;
-            background-color: var(--accent-gold);
-            color: #000;
-            font-weight: bold;
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-right: 6px;
-        }
-
-        .player-identity .position {
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
             font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--accent-blue);
         }
 
-        .ovr-badge {
-            background: linear-gradient(135deg, #1f6feb, #1158c7);
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 800;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        .progress-bg {
+            height: 12px;
+            background-color: #E2E8F0;
+            border-radius: 6px;
+            overflow: hidden;
         }
 
-        /* Price & Performance Rating */
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.2);
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .price-tag {
-            font-weight: 700;
-            color: var(--accent-gold);
-            font-size: 1.1rem;
-        }
-
-        .tier-badge {
-            font-size: 0.8rem;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background-color: #238636;
-            color: white;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .stat-item {
-            background-color: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 6px;
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.6s ease-in-out;
             border-radius: 6px;
         }
 
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            display: block;
-            margin-bottom: 2px;
+        /* AI Custom Solution Box */
+        .solution-card {
+            background-color: #FFFFFF;
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
         }
 
-        .stat-value {
-            font-weight: 700;
+        .solution-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .solution-tag {
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .solution-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2C3E50;
+        }
+
+        .solution-body {
             font-size: 0.95rem;
-            color: var(--text-primary);
+            line-height: 1.6;
+            color: #4A5568;
+            margin-bottom: 15px;
         }
 
-        /* Description / Pros */
-        .player-desc {
-            font-size: 0.88rem;
-            color: var(--text-secondary);
-            line-height: 1.4;
-            border-top: 1px solid var(--card-border);
-            padding-top: 10px;
+        .refresh-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--secondary-color);
+            color: #064E3B;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: var(--text-secondary);
-            grid-column: 1 / -1;
-        }
-
-        @media (max-width: 600px) {
-            .filter-section {
-                grid-template-columns: 1fr;
-            }
+        .refresh-btn:hover {
+            background-color: #38D9A9;
         }
     </style>
 </head>
@@ -305,279 +185,215 @@ html_content = """<!DOCTYPE html>
 
 <div class="container">
     <header>
-        <h1>FC 온라인 <span>선수 추천 AI</span></h1>
-        <p>포지션, 예산, 선호하는 성능에 맞는 최적의 선수를 탐색해보세요!</p>
+        <h1>AI 학생 피로도 진단 & 맞춤 솔루션</h1>
+        <p>수면, 컨디션, 수업 상태를 종합 분석하여 다채로운 AI 피로 개선책을 제시합니다.</p>
     </header>
 
-    <!-- 필터 영역 -->
-    <div class="filter-section">
-        <div class="filter-group">
-            <label for="position-select">포지션 선택</label>
-            <select id="position-select">
-                <option value="ALL">전체 포지션</option>
-                <option value="ST">ST / FW (스트라이커)</option>
-                <option value="CAM">CAM / MF (공격형 미드필더)</option>
-                <option value="CM">CM / CDM (중원/수비형 미드)</option>
-                <option value="CB">CB / DF (센터백)</option>
-            </select>
+    <!-- 입력 슬라이더 영역 -->
+    <div class="form-group">
+        <label>① 수면 시간 (시간)</label>
+        <div class="range-container">
+            <input type="range" id="sleep-time" min="3" max="12" value="6" oninput="calculateFatigue()">
+            <span class="range-value" id="sleep-val">6시간</span>
         </div>
-
-        <div class="filter-group">
-            <label for="budget-select">예산 범주 (BP)</label>
-            <select id="budget-select">
-                <option value="ALL">전체 가격대</option>
-                <option value="LOW">가성비 (100억 BP 이하)</option>
-                <option value="MID">중급형 (100억 ~ 500억 BP)</option>
-                <option value="HIGH">하이엔드 (500억 BP 이상)</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label for="sort-select">정렬 기준</label>
-            <select id="sort-select">
-                <option value="RECOMMEND">추천도순</option>
-                <option value="PRICE_ASC">가격 낮은순</option>
-                <option value="PRICE_DESC">가격 높은순</option>
-                <option value="OVR_DESC">능력치(OVR) 높은순</option>
-            </select>
-        </div>
-
-        <button class="recommend-btn" onclick="filterAndRenderPlayers()">
-            🔍 선수 추천받기
-        </button>
     </div>
 
-    <!-- 결과 요약 바 -->
-    <div class="results-summary">
-        <span id="result-count">총 0명의 선수가 검색되었습니다.</span>
-        <span>기준: 2026 FC 온라인 최신 데이터</span>
+    <div class="form-group">
+        <label>② 아침 기분 / 컨디션 (1 = 매우 피곤 ~ 10 = 매우 최상)</label>
+        <div class="range-container">
+            <input type="range" id="morning-cond" min="1" max="10" value="4" oninput="calculateFatigue()">
+            <span class="range-value" id="morning-val">4점</span>
+        </div>
     </div>
 
-    <!-- 선수 카드 데이터 목록 -->
-    <div class="player-grid" id="player-container">
-        <!-- JS로 dynamic 생성됨 -->
+    <div class="form-group">
+        <label>③ 현재 교시 (1~7교시)</label>
+        <div class="range-container">
+            <input type="range" id="current-period" min="1" max="7" value="4" oninput="calculateFatigue()">
+            <span class="range-value" id="period-val">4교시</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>④ 과목 정신적 난이도 (1 = 매우 쉬움 ~ 10 = 매우 어려움)</label>
+        <div class="range-container">
+            <input type="range" id="mental-load" min="1" max="10" value="8" oninput="calculateFatigue()">
+            <span class="range-value" id="mental-load-val">8점</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>⑤ 수업 체력 소모도 (1 = 휴식 수준 ~ 10 = 격렬한 운동)</label>
+        <div class="range-container">
+            <input type="range" id="physical-load" min="1" max="10" value="6" oninput="calculateFatigue()">
+            <span class="range-value" id="physical-load-val">6점</span>
+        </div>
+    </div>
+
+    <!-- 피로도 점수 출력 카드 -->
+    <div class="result-card">
+        <h3>📊 실시간 피로도 진단 결과</h3>
+        <br>
+        <div class="score-bar-container">
+            <div class="score-header">
+                <span>신체적 피로도</span>
+                <span id="physical-score-text">0점</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" id="physical-bar"></div>
+            </div>
+        </div>
+
+        <div class="score-bar-container">
+            <div class="score-header">
+                <span>정신적 피로도</span>
+                <span id="mental-score-text">0점</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" id="mental-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 다양한 처방 카드 -->
+    <div class="solution-card">
+        <div class="solution-header">
+            <span class="solution-tag" id="sol-tag">AI 처방</span>
+            <span class="solution-title" id="sol-title">원인 분석 중...</span>
+        </div>
+        <div class="solution-body" id="sol-body">
+            슬라이더를 조절하면 AI가 원인을 다각도로 분석하여 최적의 솔루션을 제공합니다.
+        </div>
+        <button class="refresh-btn" onclick="applyRefreshAction()">⚡ 2분 맞춤 리프레시 수행하기 (피로도 감소)</button>
     </div>
 </div>
 
 <script>
-    // 선수 데이터베이스
-    const playersData = [
-        {
-            name: "호날두",
-            season: "23UCL",
-            position: "ST",
-            ovr: 109,
-            priceBP: 120, // 억 BP 단위
-            priceText: "120억 BP",
-            tier: "S티어",
-            budgetCategory: "MID",
-            stats: { speed: 112, shoot: 114, pass: 98, dribble: 108, phys: 105 },
-            desc: "압도적인 침투와 점프 헤더, 양발 기반의 골 결정력을 갖춘 명실상부 1티어 스트라이커입니다."
-        },
-        {
-            name: "손흥민",
-            season: "24TS",
-            position: "ST",
-            ovr: 112,
-            priceBP: 650,
-            priceText: "650억 BP",
-            tier: "S+티어",
-            budgetCategory: "HIGH",
-            stats: { speed: 118, shoot: 116, pass: 104, dribble: 112, phys: 98 },
-            desc: "양발 감아차기(Z+D) 최고 존엄. 빠른 속가와 예리한 감아차기로 경기 흐름을 바꾸는 득점원입니다."
-        },
-        {
-            name: "셰브첸코",
-            season: "ICON",
-            position: "ST",
-            ovr: 110,
-            priceBP: 85,
-            priceText: "85억 BP",
-            tier: "A+티어",
-            budgetCategory: "LOW",
-            stats: { speed: 110, shoot: 112, pass: 92, dribble: 105, phys: 102 },
-            desc: "100억 BP 이하 가성비 대장. 위협적인 침투 움직임과 날카로운 슛팅 감각을 자랑합니다."
-        },
-        {
-            name: "굴리트",
-            season: "EBS",
-            position: "CAM",
-            ovr: 108,
-            priceBP: 95,
-            priceText: "95억 BP",
-            tier: "S티어",
-            budgetCategory: "LOW",
-            stats: { speed: 106, shoot: 108, pass: 106, dribble: 105, phys: 112 },
-            desc: "FC 온라인의 육각형 신. 육중한 체지컬, 공중볼 점유, 양발 슛팅까지 부족함이 없는 필수 선수입니다."
-        },
-        {
-            name: "케빈 더브라이너",
-            season: "23TS",
-            position: "CAM",
-            ovr: 111,
-            priceBP: 380,
-            priceText: "380억 BP",
-            tier: "S+티어",
-            budgetCategory: "MID",
-            stats: { speed: 102, shoot: 110, pass: 118, dribble: 108, phys: 100 },
-            desc: "패스 마스터. 자원 배분과 킬패스, 중거리 슛 능력이 극대화된 최고급 공격형 미드필더입니다."
-        },
-        {
-            name: "유상철",
-            season: "2022KB",
-            position: "CM",
-            ovr: 107,
-            priceBP: 60,
-            priceText: "60억 BP",
-            tier: "A+티어",
-            budgetCategory: "LOW",
-            stats: { speed: 102, shoot: 104, pass: 105, dribble: 102, phys: 108 },
-            desc: "대한민국 스쿼드의 핵심. 완벽한 양발과 공수 양면에서의 왕성한 활동량을 보장합니다."
-        },
-        {
-            name: "야야 투레",
-            season: "SPL",
-            position: "CM",
-            ovr: 109,
-            priceBP: 240,
-            priceText: "240억 BP",
-            tier: "S티어",
-            budgetCategory: "MID",
-            stats: { speed: 104, shoot: 105, pass: 107, dribble: 104, phys: 116 },
-            desc: "중원을 지배하는 피지컬 몬스터. 강력한 몸싸움과 중거리 포가 일품인 볼란치입니다."
-        },
-        {
-            name: "반데이크",
-            season: "24TY",
-            position: "CB",
-            ovr: 113,
-            priceBP: 820,
-            priceText: "820억 BP",
-            tier: "S+티어",
-            budgetCategory: "HIGH",
-            stats: { speed: 108, shoot: 65, pass: 92, dribble: 88, phys: 120 },
-            desc: "수비진의 통곡의 벽. 압도적인 역적응력과 정교한 학다리 태클로 상대 공격수를 완벽 차단합니다."
-        },
-        {
-            name: "뤼디거",
-            season: "23UCL",
-            position: "CB",
-            ovr: 108,
-            priceBP: 150,
-            priceText: "150억 BP",
-            tier: "S티어",
-            budgetCategory: "MID",
-            stats: { speed: 112, shoot: 60, pass: 88, dribble: 85, phys: 114 },
-            desc: "빠른 속가를 갖춘 수비수. 뒷공간 커버 능력이 뛰어나며 대장팀 및 첼시/레알 필수 수비수입니다."
-        },
-        {
-            name: "말디니",
-            season: "CAP",
-            position: "CB",
-            ovr: 106,
-            priceBP: 45,
-            priceText: "45억 BP",
-            tier: "A티어",
-            budgetCategory: "LOW",
-            stats: { speed: 108, shoot: 58, pass: 86, dribble: 89, phys: 104 },
-            desc: "저렴한 가격으로 대단한 AI 수비력을 맛볼 수 있는 명품 센터백입니다."
-        }
-    ];
+    function calculateFatigue() {
+        // 입력값 수집 및 단위 표시 업데이트
+        const sleep = parseInt(document.getElementById('sleep-time').value);
+        const morning = parseInt(document.getElementById('morning-cond').value);
+        const period = parseInt(document.getElementById('current-period').value);
+        const mentalLvl = parseInt(document.getElementById('mental-load').value);
+        const physicalLvl = parseInt(document.getElementById('physical-load').value);
 
-    // 선수 필터링 및 정렬 함수
-    function filterAndRenderPlayers() {
-        const selectedPosition = document.getElementById('position-select').value;
-        const selectedBudget = document.getElementById('budget-select').value;
-        const selectedSort = document.getElementById('sort-select').value;
+        document.getElementById('sleep-val').innerText = sleep + '시간';
+        document.getElementById('morning-val').innerText = morning + '점';
+        document.getElementById('period-val').innerText = period + '교시';
+        document.getElementById('mental-load-val').innerText = mentalLvl + '점';
+        document.getElementById('physical-load-val').innerText = physicalLvl + '점';
 
-        // 1. 필터링
-        let filtered = playersData.filter(player => {
-            const matchPos = (selectedPosition === 'ALL') || (player.position === selectedPosition);
-            const matchBudget = (selectedBudget === 'ALL') || (player.budgetCategory === selectedBudget);
-            return matchPos && matchBudget;
-        });
+        // 계산 알고리즘
+        let physicalScore = Math.min(100, Math.max(0, Math.round(
+            (12 - sleep) * 5 + (10 - morning) * 3 + physicalLvl * 4 + period * 2.5
+        )));
 
-        // 2. 정렬
-        filtered.sort((a, b) => {
-            if (selectedSort === 'PRICE_ASC') return a.priceBP - b.priceBP;
-            if (selectedSort === 'PRICE_DESC') return b.priceBP - a.priceBP;
-            if (selectedSort === 'OVR_DESC') return b.ovr - a.ovr;
-            return 0; // RECOMMEND 기본 순서
-        });
+        let mentalScore = Math.min(100, Math.max(0, Math.round(
+            (10 - morning) * 4 + mentalLvl * 5 + (12 - sleep) * 2 + period * 2
+        )));
 
-        // 3. 화면 렌더링
-        renderGrid(filtered);
+        // 점수 렌더링
+        renderScore('physical', physicalScore);
+        renderScore('mental', mentalScore);
+
+        // 다양한 AI 솔루션 다각도 매칭 알고리즘 실행
+        generateDiverseAISolution(sleep, morning, period, mentalLvl, physicalLvl, physicalScore, mentalScore);
     }
 
-    // 카드를 DOM에 그리는 함수
-    function renderGrid(list) {
-        const container = document.getElementById('player-container');
-        const countText = document.getElementById('result-count');
+    function renderScore(type, score) {
+        const scoreText = document.getElementById(`${type}-score-text`);
+        const fillBar = document.getElementById(`${type}-bar`);
 
-        countText.innerText = `총 ${list.length}명의 선수가 검색되었습니다.`;
-        container.innerHTML = '';
+        scoreText.innerText = `${score}점`;
+        fillBar.style.width = `${score}%`;
 
-        if (list.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>조건에 맞는 선수가 없습니다.</h3>
-                    <p>포지션이나 예산 조건 범위를 넓혀서 다시 검색해 보세요.</p>
-                </div>
-            `;
+        if (score < 40) {
+            fillBar.style.backgroundColor = 'var(--success-color)';
+        } else if (score < 70) {
+            fillBar.style.backgroundColor = 'var(--warning-color)';
+        } else {
+            fillBar.style.backgroundColor = 'var(--danger-color)';
+        }
+    }
+
+    // 다양한 AI 솔루션 분기 알고리즘
+    function generateDiverseAISolution(sleep, morning, period, mentalLvl, physicalLvl, pScore, mScore) {
+        const tag = document.getElementById('sol-tag');
+        const title = document.getElementById('sol-title');
+        const body = document.getElementById('sol-body');
+
+        const maxScore = Math.max(pScore, mScore);
+
+        // 1. 고위험 상태 (80점 이상)
+        if (maxScore >= 80) {
+            tag.style.backgroundColor = 'var(--danger-color)';
+            if (sleep <= 4) {
+                tag.innerText = "🚨 심각한 수면 부족";
+                title.innerText = "관자놀이 지압 및 미온수 섭취 필요";
+                body.innerHTML = "수면량이 매우 부족하여 뇌세포 피로가 누적되었습니다. <strong>1분간 관자놀이와 눈 주변 지압</strong>을 실시하고 미온수를 한 컵 마시세요. 필요시 보건실 방문을 권장합니다.";
+            } else if (mentalLvl >= 8) {
+                tag.innerText = "🚨 뇌 과부하 경보";
+                title.innerText = "4-7-8 호흡법 & 안구 휴식";
+                body.innerHTML = "과목 난이도로 인한 뇌 피로도가 한계치에 도달했습니다. <strong>4초간 숨을 마시고, 7초 멈춘 뒤, 8초간 길게 내쉬는 호흡법</strong>을 3회 반복하세요.";
+            } else {
+                tag.innerText = "🚨 신체 한계 상태";
+                title.innerText = "전신 이완 및 척추 스트레칭";
+                body.innerHTML = "신체 피로도가 극에 달했습니다. 자리에서 일어나 <strong>기지개를 크게 켜고 승모근과 척추를 이완시키는 스트레칭</strong>을 실시하세요.";
+            }
             return;
         }
 
-        list.forEach(player => {
-            const card = document.createElement('div');
-            card.className = 'player-card';
-            card.innerHTML = `
-                <div class="card-header">
-                    <div class="player-identity">
-                        <h3>${player.name}</h3>
-                        <span class="season">${player.season}</span>
-                        <span class="position">${player.position}</span>
-                    </div>
-                    <div class="ovr-badge">${player.ovr}</div>
-                </div>
+        // 2. 주의 상태 (50점 ~ 79점) - 원인별 세부 분석
+        if (maxScore >= 50) {
+            tag.style.backgroundColor = 'var(--warning-color)';
+            if (period >= 6) {
+                tag.innerText = "⚠️ 오후 누적 피로";
+                title.innerText = "손목 털기 & 긍정 확언 마인드셋";
+                body.innerHTML = "오후 수업이 이어지며 집중력이 저하되었습니다. <strong>손목과 어깨를 가볍게 털어주고 '오늘 하루도 잘 마무리하자'는 긍정 확언</strong>을 해보세요.";
+            } else if (physicalLvl >= 7) {
+                tag.innerText = "⚠️ 체력 소모 심함";
+                title.innerText = "거북목 예방 목 둘레 스트레칭";
+                body.innerHTML = "수업 중 체력 소모나 바르지 못한 자세로 목과 어깨가 경직되었습니다. <strong>고개를 천천히 좌우로 돌려주며 승모근을 풀이주는 스트레칭</strong>을 하세요.";
+            } else if (mentalLvl >= 6) {
+                tag.innerText = "⚠️ 정신적 과부하";
+                title.innerText = "3분 안구 휴식 & 멍때리기";
+                body.innerHTML = "어려운 수업으로 시각 및 정신 자극이 많았습니다. <strong>3분간 창밖의 먼 곳을 바라보거나 눈을 감고 뇌에 휴식</strong>을 주어 과부하를 해소하세요.";
+            } else {
+                tag.innerText = "⚠️ 아침 컨디션 저하";
+                title.innerText = "지압점 자극 & 바른 자세 교정";
+                body.innerHTML = "아침 컨디션 불량이 기침과 졸음으로 이어지고 있습니다. <strong>엄지와 검지 사이(합곡혈)를 지압</strong>하여 혈액순환을 촉진하세요.";
+            }
+            return;
+        }
 
-                <div class="info-row">
-                    <span class="price-tag">💰 ${player.priceText}</span>
-                    <span class="tier-badge">${player.tier}</span>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label">속가</span>
-                        <span class="stat-value">${player.stats.speed}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">슛팅</span>
-                        <span class="stat-value">${player.stats.shoot}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">피지컬</span>
-                        <span class="stat-value">${player.stats.phys}</span>
-                    </div>
-                </div>
-
-                <div class="player-desc">
-                    ${player.desc}
-                </div>
-            `;
-            container.appendChild(card);
-        });
+        // 3. 안정 상태 (49점 이하)
+        tag.style.backgroundColor = 'var(--success-color)';
+        tag.innerText = "✅ 최적 컨디션";
+        title.innerText = "현재 훌륭한 상태 유지 중";
+        body.innerHTML = "신체 및 정신 피로도가 모두 안정적입니다. <strong>주기적으로 수분을 섭취하고 바른 수면 습관을 유지</strong>하여 현재 컨디션을 계속 지켜나아 가세요.";
     }
 
-    // 초기 페이지 로드 시 전체 선수 렌더링
+    // 2분 리프레시 수행 버튼 클릭 처리
+    function applyRefreshAction() {
+        let pText = document.getElementById('physical-score-text');
+        let mText = document.getElementById('mental-score-text');
+
+        let currentP = parseInt(pText.innerText);
+        let currentM = parseInt(mText.innerText);
+
+        let newP = Math.max(10, currentP - 20);
+        let newM = Math.max(10, currentM - 20);
+
+        renderScore('physical', newP);
+        renderScore('mental', newM);
+
+        alert('⚡ 2분 맞춤 리프레시(스트레칭/명상/지압)를 완수했습니다!\n신체 및 정신 피로도가 각각 20점 감소하였습니다.');
+    }
+
+    // 페이지 시작 시 초기 계산
     window.onload = function() {
-        filterAndRenderPlayers();
+        calculateFatigue();
     };
 </script>
 </body>
 </html>
-"""
-
-with open("fifa_online_recommendation.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("HTML generated successfully.")
