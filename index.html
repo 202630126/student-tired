@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 학생 피로도 진단 & 맞춤 솔루션 매니저</title>
+    <title>AI 학생 피로도 진단 & 맞춤 솔루션</title>
     <style>
         :root {
             --primary-color: #4A90E2;
@@ -37,57 +37,203 @@
 
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 650px;
             background-color: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             padding: 30px;
+            position: relative;
         }
 
         header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border-bottom: 2px solid var(--bg-color);
             padding-bottom: 15px;
         }
 
         header h1 {
             color: var(--primary-color);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-bottom: 5px;
         }
 
         header p {
             color: var(--text-muted);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+        }
+
+        /* Step Indicator */
+        .step-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .step-progress-bar {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            height: 4px;
+            background-color: #E2E8F0;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .step-progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #E2E8F0;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            z-index: 2;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Page Management */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            color: #2C3E50;
         }
 
         .range-container {
             display: flex;
             align-items: center;
             gap: 15px;
+            background: #F8FAFC;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
         }
 
         input[type="range"] {
             flex: 1;
+            height: 6px;
+            border-radius: 3px;
         }
 
         .range-value {
             font-weight: bold;
-            min-width: 55px;
+            min-width: 60px;
             text-align: right;
             color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        /* Timetable Grid */
+        .timetable-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .timetable-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #F8FAFC;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .timetable-item span {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            width: 45px;
+        }
+
+        select {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-prev {
+            background-color: #E2E8F0;
+            color: #4A5568;
+        }
+
+        .btn-prev:hover {
+            background-color: #CBD5E1;
+        }
+
+        .btn-next {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-next:hover {
+            background-color: #357ABD;
         }
 
         /* Results Display */
@@ -95,7 +241,7 @@
             background: #F8FAFC;
             border-radius: 12px;
             padding: 20px;
-            margin-top: 25px;
+            margin-top: 10px;
             border: 1px solid var(--border-color);
         }
 
@@ -124,13 +270,13 @@
             border-radius: 6px;
         }
 
-        /* AI Custom Solution Box */
+        /* Solution Card */
         .solution-card {
             background-color: #FFFFFF;
             border: 2px solid var(--primary-color);
             border-radius: 12px;
             padding: 20px;
-            margin-top: 20px;
+            margin-top: 15px;
             box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
         }
 
@@ -138,7 +284,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .solution-tag {
@@ -151,14 +297,14 @@
         }
 
         .solution-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: bold;
             color: #2C3E50;
         }
 
         .solution-body {
             font-size: 0.95rem;
-            line-height: 1.6;
+            line-height: 1.5;
             color: #4A5568;
             margin-bottom: 15px;
         }
@@ -171,7 +317,7 @@
             border: none;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: background-color 0.2s;
         }
@@ -185,119 +331,231 @@
 
 <div class="container">
     <header>
-        <h1>AI 학생 피로도 진단 & 맞춤 솔루션</h1>
-        <p>수면, 컨디션, 수업 상태를 종합 분석하여 다채로운 AI 피로 개선책을 제시합니다.</p>
+        <h1>AI 학생 피로도 진단</h1>
+        <p>단계별 정보를 입력하고 오늘 과목 맞춤 피로 진단을 받아보세요.</p>
     </header>
 
-    <!-- 입력 슬라이더 영역 -->
-    <div class="form-group">
-        <label>① 수면 시간 (시간)</label>
-        <div class="range-container">
-            <input type="range" id="sleep-time" min="3" max="12" value="6" oninput="calculateFatigue()">
-            <span class="range-value" id="sleep-val">6시간</span>
+    <!-- Step Progress Bar -->
+    <div class="step-progress">
+        <div class="step-progress-bar">
+            <div class="step-progress-fill" id="progress-fill"></div>
         </div>
+        <div class="step-dot active" id="dot-1">1</div>
+        <div class="step-dot" id="dot-2">2</div>
+        <div class="step-dot" id="dot-3">3</div>
+        <div class="step-dot" id="dot-4">4</div>
+        <div class="step-dot" id="dot-5">5</div>
     </div>
 
-    <div class="form-group">
-        <label>② 아침 기분 / 컨디션 (1 = 매우 피곤 ~ 10 = 매우 최상)</label>
-        <div class="range-container">
-            <input type="range" id="morning-cond" min="1" max="10" value="4" oninput="calculateFatigue()">
-            <span class="range-value" id="morning-val">4점</span>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>③ 현재 교시 (1~7교시)</label>
-        <div class="range-container">
-            <input type="range" id="current-period" min="1" max="7" value="4" oninput="calculateFatigue()">
-            <span class="range-value" id="period-val">4교시</span>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>④ 과목 정신적 난이도 (1 = 매우 쉬움 ~ 10 = 매우 어려움)</label>
-        <div class="range-container">
-            <input type="range" id="mental-load" min="1" max="10" value="8" oninput="calculateFatigue()">
-            <span class="range-value" id="mental-load-val">8점</span>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>⑤ 수업 체력 소모도 (1 = 휴식 수준 ~ 10 = 격렬한 운동)</label>
-        <div class="range-container">
-            <input type="range" id="physical-load" min="1" max="10" value="6" oninput="calculateFatigue()">
-            <span class="range-value" id="physical-load-val">6점</span>
-        </div>
-    </div>
-
-    <!-- 피로도 점수 출력 카드 -->
-    <div class="result-card">
-        <h3>📊 실시간 피로도 진단 결과</h3>
-        <br>
-        <div class="score-bar-container">
-            <div class="score-header">
-                <span>신체적 피로도</span>
-                <span id="physical-score-text">0점</span>
-            </div>
-            <div class="progress-bg">
-                <div class="progress-fill" id="physical-bar"></div>
+    <!-- Page 1: 수면 시간 -->
+    <div class="page active" id="page-1">
+        <div class="form-group">
+            <label>① 어제 몇 시간 잤나요? (수면 시간)</label>
+            <div class="range-container">
+                <input type="range" id="sleep-time" min="3" max="12" value="6" oninput="updateVal('sleep-time', 'sleep-val', '시간')">
+                <span class="range-value" id="sleep-val">6시간</span>
             </div>
         </div>
-
-        <div class="score-bar-container">
-            <div class="score-header">
-                <span>정신적 피로도</span>
-                <span id="mental-score-text">0점</span>
-            </div>
-            <div class="progress-bg">
-                <div class="progress-fill" id="mental-bar"></div>
-            </div>
+        <div class="btn-group">
+            <button class="btn btn-prev" style="visibility: hidden;">이전</button>
+            <button class="btn btn-next" onclick="nextPage(2)">다음 단계 ➔</button>
         </div>
     </div>
 
-    <!-- AI 다양한 처방 카드 -->
-    <div class="solution-card">
-        <div class="solution-header">
-            <span class="solution-tag" id="sol-tag">AI 처방</span>
-            <span class="solution-title" id="sol-title">원인 분석 중...</span>
+    <!-- Page 2: 아침 컨디션 -->
+    <div class="page" id="page-2">
+        <div class="form-group">
+            <label>② 오늘 아침 기분/컨디션은 어땠나요?</label>
+            <p style="font-size:0.85rem; color:#888; margin-bottom:10px;">(1점: 매우 피곤함 ~ 10점: 아주 개운함)</p>
+            <div class="range-container">
+                <input type="range" id="morning-cond" min="1" max="10" value="4" oninput="updateVal('morning-cond', 'morning-val', '점')">
+                <span class="range-value" id="morning-val">4점</span>
+            </div>
         </div>
-        <div class="solution-body" id="sol-body">
-            슬라이더를 조절하면 AI가 원인을 다각도로 분석하여 최적의 솔루션을 제공합니다.
+        <div class="btn-group">
+            <button class="btn btn-prev" onclick="prevPage(1)">⬅ 이전</button>
+            <button class="btn btn-next" onclick="nextPage(3)">다음 단계 ➔</button>
         </div>
-        <button class="refresh-btn" onclick="applyRefreshAction()">⚡ 2분 맞춤 리프레시 수행하기 (피로도 감소)</button>
+    </div>
+
+    <!-- Page 3: 오늘의 시간표 입력 -->
+    <div class="page" id="page-3">
+        <div class="form-group">
+            <label>③ 오늘의 시간표를 설정해 주세요.</label>
+            <div class="timetable-grid" id="timetable-container">
+                <!-- JavaScript dynamic generation -->
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-prev" onclick="prevPage(2)">⬅ 이전</button>
+            <button class="btn btn-next" onclick="nextPage(4)">다음 단계 ➔</button>
+        </div>
+    </div>
+
+    <!-- Page 4: 현재 교시 선택 -->
+    <div class="page" id="page-4">
+        <div class="form-group">
+            <label>④ 지금은 몇 교시인가요?</label>
+            <div class="range-container">
+                <input type="range" id="current-period" min="1" max="7" value="4" oninput="updateVal('current-period', 'period-val', '교시')">
+                <span class="range-value" id="period-val">4교시</span>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-prev" onclick="prevPage(3)">⬅ 이전</button>
+            <button class="btn btn-next" onclick="nextPage(5); calculateFatigue();">결과 확인하기 📊</button>
+        </div>
+    </div>
+
+    <!-- Page 5: 진단 결과 및 AI 맞춤 솔루션 -->
+    <div class="page" id="page-5">
+        <div class="result-card">
+            <h3 style="margin-bottom: 10px;">📊 AI 피로도 분석 결과</h3>
+            <div class="score-bar-container">
+                <div class="score-header">
+                    <span>신체적 피로도</span>
+                    <span id="physical-score-text">0점</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" id="physical-bar"></div>
+                </div>
+            </div>
+
+            <div class="score-bar-container">
+                <div class="score-header">
+                    <span>정신적 피로도</span>
+                    <span id="mental-score-text">0점</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" id="mental-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Solution -->
+        <div class="solution-card">
+            <div class="solution-header">
+                <span class="solution-tag" id="sol-tag">AI 처방</span>
+                <span class="solution-title" id="sol-title">분석 중...</span>
+            </div>
+            <div class="solution-body" id="sol-body">
+                시간표와 현재 상태를 바탕으로 AI 솔루션을 생성합니다.
+            </div>
+            <button class="refresh-btn" onclick="applyRefreshAction()">⚡ 2분 맞춤 리프레시 수행 (피로도 감소)</button>
+        </div>
+
+        <div class="btn-group" style="margin-top: 15px;">
+            <button class="btn btn-prev" onclick="prevPage(4)">⬅ 설정 수정하기</button>
+            <button class="btn btn-next" onclick="location.reload()">🔄 다시 진단하기</button>
+        </div>
     </div>
 </div>
 
 <script>
+    // 과목 리스트 (요청사항 반영)
+    const subjects = ["국어", "수학", "영어", "사회", "과학", "역사", "한문", "미술", "기술", "가정", "체육", "스포츠클럽"];
+
+    // 기본 시간표 세팅
+    const defaultSchedule = ["국어", "수학", "영어", "체육", "과학", "사회", "미술"];
+
+    let currentPage = 1;
+
+    // 페이지 로드 시 시간표 생성
+    window.onload = function() {
+        const container = document.getElementById('timetable-container');
+        for (let i = 1; i <= 7; i++) {
+            let optionsHTML = subjects.map(sub => 
+                `<option value="${sub}" ${sub === defaultSchedule[i-1] ? 'selected' : ''}>${sub}</option>`
+            ).join('');
+
+            container.innerHTML += `
+                <div class="timetable-item">
+                    <span>${i}교시:</span>
+                    <select id="period-${i}">
+                        ${optionsHTML}
+                    </select>
+                </div>
+            `;
+        }
+    };
+
+    function updateVal(inputId, valId, unit) {
+        document.getElementById(valId).innerText = document.getElementById(inputId).value + unit;
+    }
+
+    function nextPage(pageNum) {
+        document.getElementById(`page-${currentPage}`).classList.remove('active');
+        document.getElementById(`page-${pageNum}`).classList.add('active');
+        currentPage = pageNum;
+        updateProgress();
+    }
+
+    function prevPage(pageNum) {
+        document.getElementById(`page-${currentPage}`).classList.remove('active');
+        document.getElementById(`page-${pageNum}`).classList.add('active');
+        currentPage = pageNum;
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const percentage = ((currentPage - 1) / 4) * 100;
+        document.getElementById('progress-fill').style.width = percentage + '%';
+
+        for (let i = 1; i <= 5; i++) {
+            const dot = document.getElementById(`dot-${i}`);
+            if (i <= currentPage) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        }
+    }
+
     function calculateFatigue() {
-        // 입력값 수집 및 단위 표시 업데이트
         const sleep = parseInt(document.getElementById('sleep-time').value);
         const morning = parseInt(document.getElementById('morning-cond').value);
-        const period = parseInt(document.getElementById('current-period').value);
-        const mentalLvl = parseInt(document.getElementById('mental-load').value);
-        const physicalLvl = parseInt(document.getElementById('physical-load').value);
+        const currentPeriod = parseInt(document.getElementById('current-period').value);
 
-        document.getElementById('sleep-val').innerText = sleep + '시간';
-        document.getElementById('morning-val').innerText = morning + '점';
-        document.getElementById('period-val').innerText = period + '교시';
-        document.getElementById('mental-load-val').innerText = mentalLvl + '점';
-        document.getElementById('physical-load-val').innerText = physicalLvl + '점';
+        // 시간표에서 현재 교시까지의 과목 특성 분석
+        let totalPhysicalLoad = 0;
+        let totalMentalLoad = 0;
+        let currentSubject = document.getElementById(`period-${currentPeriod}`).value;
 
-        // 계산 알고리즘
+        for (let i = 1; i <= currentPeriod; i++) {
+            let sub = document.getElementById(`period-${i}`).value;
+            
+            // 과목별 신체/정신 가중치 설정
+            if (sub === "체육" || sub === "스포츠클럽") {
+                totalPhysicalLoad += 8;
+                totalMentalLoad += 2;
+            } else if (sub === "수학" || sub === "영어" || sub === "과학" || sub === "국어") {
+                totalPhysicalLoad += 2;
+                totalMentalLoad += 8;
+            } else if (sub === "미술" || sub === "기술" || sub === "가정") {
+                totalPhysicalLoad += 5;
+                totalMentalLoad += 4;
+            } else { // 사회, 역사, 한문 등
+                totalPhysicalLoad += 3;
+                totalMentalLoad += 6;
+            }
+        }
+
+        let avgPhysical = totalPhysicalLoad / currentPeriod;
+        let avgMental = totalMentalLoad / currentPeriod;
+
+        // 최종 피로도 점수 산출
         let physicalScore = Math.min(100, Math.max(0, Math.round(
-            (12 - sleep) * 5 + (10 - morning) * 3 + physicalLvl * 4 + period * 2.5
+            (12 - sleep) * 4.5 + (10 - morning) * 3 + avgPhysical * 4 + currentPeriod * 2.5
         )));
 
         let mentalScore = Math.min(100, Math.max(0, Math.round(
-            (10 - morning) * 4 + mentalLvl * 5 + (12 - sleep) * 2 + period * 2
+            (10 - morning) * 4 + avgMental * 5 + (12 - sleep) * 2 + currentPeriod * 2
         )));
 
-        // 점수 렌더링
         renderScore('physical', physicalScore);
         renderScore('mental', mentalScore);
 
-        // 다양한 AI 솔루션 다각도 매칭 알고리즘 실행
-        generateDiverseAISolution(sleep, morning, period, mentalLvl, physicalLvl, physicalScore, mentalScore);
+        generateAIPrescription(sleep, morning, currentPeriod, currentSubject, physicalScore, mentalScore);
     }
 
     function renderScore(type, score) {
@@ -316,64 +574,47 @@
         }
     }
 
-    // 다양한 AI 솔루션 분기 알고리즘
-    function generateDiverseAISolution(sleep, morning, period, mentalLvl, physicalLvl, pScore, mScore) {
+    function generateAIPrescription(sleep, morning, period, currentSubject, pScore, mScore) {
         const tag = document.getElementById('sol-tag');
         const title = document.getElementById('sol-title');
         const body = document.getElementById('sol-body');
 
         const maxScore = Math.max(pScore, mScore);
 
-        // 1. 고위험 상태 (80점 이상)
         if (maxScore >= 80) {
             tag.style.backgroundColor = 'var(--danger-color)';
-            if (sleep <= 4) {
-                tag.innerText = "🚨 심각한 수면 부족";
-                title.innerText = "관자놀이 지압 및 미온수 섭취 필요";
-                body.innerHTML = "수면량이 매우 부족하여 뇌세포 피로가 누적되었습니다. <strong>1분간 관자놀이와 눈 주변 지압</strong>을 실시하고 미온수를 한 컵 마시세요. 필요시 보건실 방문을 권장합니다.";
-            } else if (mentalLvl >= 8) {
-                tag.innerText = "🚨 뇌 과부하 경보";
-                title.innerText = "4-7-8 호흡법 & 안구 휴식";
-                body.innerHTML = "과목 난이도로 인한 뇌 피로도가 한계치에 도달했습니다. <strong>4초간 숨을 마시고, 7초 멈춘 뒤, 8초간 길게 내쉬는 호흡법</strong>을 3회 반복하세요.";
+            if (currentSubject === "체육" || currentSubject === "스포츠클럽") {
+                tag.innerText = "🚨 신체 과부하 경보";
+                title.innerText = "수분 보충 및 하체·승모근 스트레칭";
+                body.innerHTML = `현재 <strong>${currentSubject}</strong> 수업 후 신체 피로도가 매우 높습니다. 시원한 물을 한 컵 마시고, 자리에서 햄스트링과 승모근 이완 스트레칭을 진행하세요.`;
             } else {
-                tag.innerText = "🚨 신체 한계 상태";
-                title.innerText = "전신 이완 및 척추 스트레칭";
-                body.innerHTML = "신체 피로도가 극에 달했습니다. 자리에서 일어나 <strong>기지개를 크게 켜고 승모근과 척추를 이완시키는 스트레칭</strong>을 실시하세요.";
+                tag.innerText = "🚨 뇌 피로도 한계";
+                title.innerText = "4-7-8 뇌 호흡법 & 3분 눈 지압";
+                body.innerHTML = `수면 부족과 집중력을 요하는 <strong>${currentSubject}</strong> 수업으로 뇌 피로도가 극에 달했습니다. 4-7-8 호흡법으로 산소를 공급하고 관자놀이를 지압해 주세요.`;
             }
             return;
         }
 
-        // 2. 주의 상태 (50점 ~ 79점) - 원인별 세부 분석
         if (maxScore >= 50) {
             tag.style.backgroundColor = 'var(--warning-color)';
-            if (period >= 6) {
+            if (period >= 5) {
                 tag.innerText = "⚠️ 오후 누적 피로";
-                title.innerText = "손목 털기 & 긍정 확언 마인드셋";
-                body.innerHTML = "오후 수업이 이어지며 집중력이 저하되었습니다. <strong>손목과 어깨를 가볍게 털어주고 '오늘 하루도 잘 마무리하자'는 긍정 확언</strong>을 해보세요.";
-            } else if (physicalLvl >= 7) {
-                tag.innerText = "⚠️ 체력 소모 심함";
-                title.innerText = "거북목 예방 목 둘레 스트레칭";
-                body.innerHTML = "수업 중 체력 소모나 바르지 못한 자세로 목과 어깨가 경직되었습니다. <strong>고개를 천천히 좌우로 돌려주며 승모근을 풀이주는 스트레칭</strong>을 하세요.";
-            } else if (mentalLvl >= 6) {
-                tag.innerText = "⚠️ 정신적 과부하";
-                title.innerText = "3분 안구 휴식 & 멍때리기";
-                body.innerHTML = "어려운 수업으로 시각 및 정신 자극이 많았습니다. <strong>3분간 창밖의 먼 곳을 바라보거나 눈을 감고 뇌에 휴식</strong>을 주어 과부하를 해소하세요.";
+                title.innerText = "손목·어깨 털기 및 리프레시";
+                body.innerHTML = `오후 ${period}교시 진행으로 집중력이 저하되고 있습니다. <strong>${currentSubject}</strong> 수업 쉬는 시간에 가볍게 몸을 풀고 창밖을 바라보며 시각 휴식을 취해보세요.`;
             } else {
-                tag.innerText = "⚠️ 아침 컨디션 저하";
-                title.innerText = "지압점 자극 & 바른 자세 교정";
-                body.innerHTML = "아침 컨디션 불량이 기침과 졸음으로 이어지고 있습니다. <strong>엄지와 검지 사이(합곡혈)를 지압</strong>하여 혈액순환을 촉진하세요.";
+                tag.innerText = "⚠️ 주의 단계";
+                title.innerText = "합곡혈 지압 & 자세 교정";
+                body.innerHTML = `아침 컨디션 불량으로 피로가 누적되고 있습니다. 엄지와 검지 사이(합곡혈)를 지압하며 척추를 바로 세워 집중력을 유지해 보세요.`;
             }
             return;
         }
 
-        // 3. 안정 상태 (49점 이하)
         tag.style.backgroundColor = 'var(--success-color)';
         tag.innerText = "✅ 최적 컨디션";
-        title.innerText = "현재 훌륭한 상태 유지 중";
-        body.innerHTML = "신체 및 정신 피로도가 모두 안정적입니다. <strong>주기적으로 수분을 섭취하고 바른 수면 습관을 유지</strong>하여 현재 컨디션을 계속 지켜나아 가세요.";
+        title.innerText = "훌륭한 상태 유지 중";
+        body.innerHTML = `현재 <strong>${currentSubject}</strong> 수업에 최적화된 좋은 컨디션입니다! 바른 자세와 적절한 수분 섭취로 좋은 상태를 계속 유지하세요.`;
     }
 
-    // 2분 리프레시 수행 버튼 클릭 처리
     function applyRefreshAction() {
         let pText = document.getElementById('physical-score-text');
         let mText = document.getElementById('mental-score-text');
@@ -387,13 +628,8 @@
         renderScore('physical', newP);
         renderScore('mental', newM);
 
-        alert('⚡ 2분 맞춤 리프레시(스트레칭/명상/지압)를 완수했습니다!\n신체 및 정신 피로도가 각각 20점 감소하였습니다.');
+        alert('⚡ 2분 맞춤 리프레시를 완수했습니다!\n신체 및 정신 피로도가 각각 20점 줄어들었습니다.');
     }
-
-    // 페이지 시작 시 초기 계산
-    window.onload = function() {
-        calculateFatigue();
-    };
 </script>
 </body>
 </html>
